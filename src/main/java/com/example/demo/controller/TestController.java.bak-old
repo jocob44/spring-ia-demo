@@ -1,0 +1,16 @@
+package com.example.demo.controller;
+
+class TestController {
+
+    boolean wrongValue = true;
+
+    boolean usUsedValue;
+
+    public String testMethod() {
+        if (wrongValue) {
+            return "This is the wrong value.";
+        } else {
+            return "This is the correct value.";
+        }
+    }
+}
