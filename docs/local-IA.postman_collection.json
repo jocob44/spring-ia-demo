@@ -1,0 +1,342 @@
+{
+  "info": {
+    "_postman_id": "ea8defa8-113e-4885-9432-d6f5193cf9d0",
+    "name": "local-IA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29598519"
+  },
+  "item": [
+    {
+      "name": "refactor",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "public class User {\r\n    public void save(String n, String e) {\r\n        // Imagina un SQL Injection aquí\r\n        String sql = \"INSERT INTO users VALUES ('\" + n + \"')\";\r\n        System.out.println(\"Guardando...\");\r\n    }\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/refactor",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "refactor"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "refactor",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "public class User {\r\n    public void save(String n, String e) {\r\n        // Imagina un SQL Injection aquí\r\n        String sql = \"INSERT INTO users VALUES ('\" + n + \"')\";\r\n        System.out.println(\"Guardando...\");\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/refactor",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "refactor"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 26 Feb 2026 22:46:05 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"originalCode\": \"public class User { public void save(String n, String e) { String sql = \\\"INSERT INTO users VALUES ('\\\" + n + \\\"')\\\"; System.out.println(\\\"Guardando...\\\"); } }\",\n    \"improvedCode\": \"public class User { private final Connection connection; public User(Connection connection) { this.connection = connection; } public void save(String name, String email) { if (name == null || email == null) { throw new NullPointerException(\\\"Nombre y correo electrónico no pueden ser nulos\\\"); } try (PreparedStatement statement = connection.prepareStatement(\\\"INSERT INTO users (name, email) VALUES (?, ?)\\\")) { statement.setString(1, name); statement.setString(2, email); statement.executeUpdate(); System.out.println(\\\"Guardando...\\\"); } catch (SQLException e) { throw new RuntimeException(e); } } }\",\n    \"bugsEncontrados\": [\n        \"SQL Injection\",\n        \"Falta de validación de entrada\"\n    ],\n    \"explicacion\": \"Se encontraron vulnerabilidades de SQL Injection y falta de validación de entrada en el código original. Se aplicaron patrones de diseño modernos como el uso de PreparedStatements y validación de entrada para mejorar la seguridad y legibilidad del código.\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "analyze-my-code",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": [
+        {
+          "name": "analyze-my-code",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/analyze-my-code?className=MyController",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "analyze-my-code"
+              ],
+              "query": [
+                {
+                  "key": "className",
+                  "value": "MyController"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 26 Feb 2026 22:56:53 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"originalCode\": \"El código original se proporcionó en la solicitud\",\n    \"improvedCode\": \"No se proporciona código mejorado debido a la complejidad del código original y la necesidad de una refactorización profunda.\",\n    \"bugsEncontrados\": [\n        \"No se manejan excepciones personalizadas para el ChatClient de Spring AI\",\n        \"No se han implementado métricas de escalabilidad para el análisis de código\",\n        \"No se sigue el patrón de diseño de Singleton para la instanciación del ChatClient\"\n    ],\n    \"explicacion\": \"El código presenta algunas deficiencias en cuanto a manejo de excepciones y escalabilidad. Se recomienda implementar excepciones personalizadas para el ChatClient de Spring AI y agregar métricas de escalabilidad para el análisis de código. Además, se sugiere seguir el patrón de diseño de Singleton para la instanciación del ChatClient.\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "apply-fix",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/ai/self-healing/apply-fix?className=TestController",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "ai",
+            "self-healing",
+            "apply-fix"
+          ],
+          "query": [
+            {
+              "key": "className",
+              "value": "TestController"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "New Request",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/ai/self-healing/apply-fix?className=TestController",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "ai",
+                "self-healing",
+                "apply-fix"
+              ],
+              "query": [
+                {
+                  "key": "className",
+                  "value": "TestController"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain;charset=UTF-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "86"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 26 Feb 2026 23:11:43 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "¡Éxito! El archivo TestController.java ha sido actualizado y se creó un backup .bak"
+        }
+      ]
+    },
+    {
+      "name": "debt-report",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/ai/self-healing/debt-report?className=TestController",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "ai",
+            "self-healing",
+            "debt-report"
+          ],
+          "query": [
+            {
+              "key": "className",
+              "value": "TestController"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "New Request",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/ai/self-healing/debt-report?className=TestController",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "ai",
+                "self-healing",
+                "debt-report"
+              ],
+              "query": [
+                {
+                  "key": "className",
+                  "value": "TestController"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 26 Feb 2026 23:20:00 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"className\": \"TestController\",\n    \"scoreCalidad\": 0.6,\n    \"riesgoPrincipal\": \"Falta de claridad en la lógica de negocio\",\n    \"horasAhorradasEstimadas\": 8,\n    \"impactoNegocio\": \"Alto\",\n    \"sugerenciasCriticas\": [\n        \"Revisar la lógica de negocio en los métodos testMethod1 y testMethod\",\n        \"Eliminar la variable wrongValue y reemplazarla con una lógica más clara\",\n        \"Mejorar la seguridad del código mediante la validación de entradas y la protección contra inyecciones\",\n        \"Refactorizar el código para mejorar la complejidad ciclomática y el acoplamiento\"\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "orchestrate",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/ai/self-healing/orchestrate?className=TestController",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "ai",
+            "self-healing",
+            "orchestrate"
+          ],
+          "query": [
+            {
+              "key": "className",
+              "value": "TestController"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
