@@ -1,16 +1,18 @@
 package com.example.demo.controller;
 
+/**
+ * Controlador de prueba.
+ */
 public class TestController {
 
     private boolean isValid = true;
 
-    private boolean usedValue;
-
-    public String testMethod1() {
-        return isValid ? "This is the correct value." : "This is the wrong value.";
-    }
-
+    /**
+     * Método de prueba que devuelve un mensaje según el valor de isValid.
+     * 
+     * @return Mensaje de prueba.
+     */
     public String testMethod() {
-        return isValid ? "This is the correct value." : "This is the wrong value.";
+        return isValid ? "Este es el valor correcto" : "Este es el valor incorrecto";
     }
 }

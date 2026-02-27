@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Engineer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+<div class="container mx-auto px-4 py-8">
+    <header class="mb-12 border-b border-gray-700 pb-6">
+        <h1 class="text-4xl font-bold text-blue-400">AI Code Orchestrator</h1>
+        <p class="text-gray-400">Principal Engineer Tooling - Llama 3.3 70B</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">Control de Entidades</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre de la Clase/Entidad</label>
+                    <input id="className" type="text" placeholder="Ej: MyController"
+                           class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="runAction('/ai/self-healing/generate-docs')" class="bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-sm font-bold transition">📄 Documentar</button>
+                    <button onclick="runAction('/ai/self-healing/debt-report')" class="bg-yellow-600 hover:bg-yellow-700 py-2 px-4 rounded text-sm font-bold transition">📊 Auditar Deuda</button>
+                    <button onclick="runAction('/ai/self-healing/orchestrate-full')" class="bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-sm font-bold transition">🤖 Orquestar Todo</button>
+                    <button onclick="runAction('/ai/self-healing/apply-fix')" class="bg-red-600 hover:bg-red-700 py-2 px-4 rounded text-sm font-bold transition">🩹 Auto-Fix</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex flex-col">
+            <h2 class="text-xl font-semibold mb-4 text-green-300">Consola de Salida</h2>
+            <div id="output" class="flex-grow bg-black p-4 rounded-md font-mono text-sm overflow-auto max-h-[300px] text-green-400 border border-gray-600">
+                Esperando acción...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function runAction(action) {
+        const className = document.getElementById('className').value;
+        const output = document.getElementById('output');
+
+        if(!className) {
+            alert('Por favor, ingresa el nombre de la clase');
+            return;
+        }
+
+        output.innerText = `Ejecutando ${action} para ${className}...`;
+
+        try {
+            // Prefijo solicitado
+            const baseUrl = "";
+            const url = `${baseUrl}${action}?className=${className}`;
+
+            // El reporte de deuda es GET, los demás son POST según tus ejemplos
+            const method = (action === "/ai/self-healing/debt-report") ? 'GET' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+            const data = await response.json().catch(() => response.text());
+
+            // Si es un objeto lo formateamos, si es texto lo mostramos tal cual
+            output.innerText = (typeof data === 'object')
+                ? JSON.stringify(data, null, 2)
+                : data;
+
+        } catch (err) {
+            output.className = "flex-grow bg-black p-4 rounded-md font-mono text-sm overflow-auto max-h-[300px] text-red-500 border border-red-900";
+            output.innerText = "ERROR CRÍTICO:\n" + err.message;
+        }
+    }
+</script>
+</body>
+</html>

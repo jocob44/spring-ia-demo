@@ -12,6 +12,7 @@ import java.nio.file.StandardCopyOption;
 public class CodeFileService {
 
     private final String BASE_PATH = "src/main/java/com/example/demo/controller/";
+    private final String TEST_PATH = "src/test/java/com/example/demo/controller/"; // Ruta de tests
 
     public String readClass(String className) throws IOException, IOException {
         return Files.readString(Paths.get(BASE_PATH, className + ".java"));
@@ -25,5 +26,21 @@ public class CodeFileService {
 
         // Sobreescribir con el nuevo código
         Files.writeString(path, newContent);
+    }
+
+    public void writeTest(String className, String testContent) throws IOException {
+        // Aseguramos que la carpeta de tests exista
+        Path directory = Paths.get(TEST_PATH);
+        if (!Files.exists(directory)) {
+            Files.createDirectories(directory);
+        }
+
+        Path path = Paths.get(TEST_PATH, className + "Test.java");
+        Files.writeString(path, testContent);
+    }
+
+    public void writeDocumentation(String content) throws IOException {
+        Path path = Paths.get("DOCUMENTATION.md");
+        Files.writeString(path, content);
     }
 }

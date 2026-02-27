@@ -153,4 +153,97 @@ public class SelfHealingController {
         // Elimina espacios en blanco o saltos de línea al inicio y final
         return limpio.trim();
     }
+
+    @PostMapping("/orchestrate-full")
+    public OrchestrationResult orchestrateWithTest(@RequestParam String className) {
+        try {
+            // 1. Auditoría
+            TechnicalDebtReport report = getDebtReport(className);
+
+            // 2. Refactor (si es necesario)
+            if (report.scoreCalidad() < 7.0) {
+                applyFix(className);
+            }
+
+            // 3. GENERACIÓN DE TEST (La pieza final)
+            String updatedCode = fileService.readClass(className);
+
+            String testPrompt = """
+                Eres un experto en QA Automation. Genera un test unitario con JUnit 5 y Mockito.
+                
+                Para la clase: {className}
+                Código: {code}
+                
+                Requisitos:
+                1. Cubre los casos de éxito y error.
+                2. Usa @ExtendWith(MockitoExtension.class).
+                3. Devuelve SOLO el código, sin markdown ni explicaciones.
+                """;
+
+            String rawTest = chatClient.prompt()
+                    .user(u -> u.text(testPrompt)
+                            .params(Map.of(
+                                    "className", className,
+                                    "code", updatedCode
+                            )))
+                    .call()
+                    .content();
+
+            // Limpiamos y guardamos el test
+            String cleanTest = limpiarCodigoMarkdown(rawTest);
+            fileService.writeTest(className, cleanTest);
+
+            return new OrchestrationResult(
+                    className,
+                    report.scoreCalidad(),
+                    true,
+                    "REFACTOR + TEST_GENERATED",
+                    "Código saneado y test unitario creado en src/test/java"
+            );
+
+        } catch (Exception e) {
+            return new OrchestrationResult(className, 0, false, "ERROR", e.getMessage());
+        }
+    }
+
+    @PostMapping("/generate-docs")
+    public String generateDocs(@RequestParam String className) {
+        try {
+            // 1. Leer el código del controlador
+            String code = fileService.readClass(className);
+
+            // 2. Prompt diseñado para documentación técnica
+            String docPrompt = """
+                Actúa como un Technical Writer especializado en APIs REST.
+                Analiza el siguiente código de Spring Boot y genera una documentación técnica en Markdown.
+                
+                Código:
+                {code}
+                
+                La documentación debe incluir:
+                1. Nombre del Controlador y su propósito general.
+                2. Un listado de Endpoints (Verbo HTTP + URL).
+                3. Para cada endpoint: Parámetros de entrada, tipo de retorno y una breve descripción.
+                4. Un ejemplo de uso con 'curl'.
+                
+                Usa un tono profesional y limpio. No incluyas bloques de código Java, solo el Markdown.
+                """;
+
+            // 3. Ejecutar con Llama 3.3
+            String markdownDoc = chatClient.prompt()
+                    .user(u -> u.text(docPrompt)
+                            .params(Map.of("code", code)))
+                    .call()
+                    .content();
+
+            // 4. Limpiar (por si acaso) y Guardar
+            String cleanDoc = limpiarCodigoMarkdown(markdownDoc);
+            fileService.writeDocumentation(cleanDoc);
+
+            return "Documentación generada con éxito en DOCUMENTATION.md";
+
+        } catch (Exception e) {
+            return "Error generando documentación: " + e.getMessage();
+        }
+    }
 }
