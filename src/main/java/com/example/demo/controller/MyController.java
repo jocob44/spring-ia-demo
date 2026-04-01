@@ -4,6 +4,8 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,15 +18,32 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 public class MyController {
 
     private final ChatClient chatClient;
+    private final Path generatedOutputBasePath;
+    private final Path sourceReadBasePath;
 
     // Inyección por constructor: La forma más segura y testeable
-    public MyController(ChatClient.Builder chatClientBuilder) {
+    @Autowired
+    public MyController(
+            ChatClient.Builder chatClientBuilder,
+            @Value("${app.codegen.output-path:src/main/java}") String generatedOutputPath,
+            @Value("${app.codegen.source-path:src/main/java/com/example/demo/controller}") String sourcePath
+    ) {
         this.chatClient = chatClientBuilder.build();
+        this.generatedOutputBasePath = Paths.get(generatedOutputPath).toAbsolutePath().normalize();
+        this.sourceReadBasePath = Paths.get(sourcePath).toAbsolutePath().normalize();
+    }
+
+    // Constructor auxiliar para tests unitarios sin contexto Spring.
+    MyController(ChatClient.Builder chatClientBuilder, Path generatedOutputBasePath, Path sourceReadBasePath) {
+        this.chatClient = chatClientBuilder.build();
+        this.generatedOutputBasePath = generatedOutputBasePath.toAbsolutePath().normalize();
+        this.sourceReadBasePath = sourceReadBasePath.toAbsolutePath().normalize();
     }
 
     @GetMapping("/ai")
@@ -85,7 +104,21 @@ public class MyController {
                 .call()
                 .content();
         JavaClassResponse object = converter.convert(response);
-        Files.writeString(Path.of("src/main/java/" + object.fileName()), object.content());
+        Objects.requireNonNull(object, "La IA no devolvio un objeto valido.");
+        if (object.fileName() == null || object.fileName().isBlank() || !object.fileName().endsWith(".java")) {
+            throw new IllegalArgumentException("La respuesta de IA debe incluir un fileName .java valido.");
+        }
+        if (object.content() == null || object.content().isBlank()) {
+            throw new IllegalArgumentException("La respuesta de IA no puede generar un archivo vacio.");
+        }
+
+        Path outputPath = generatedOutputBasePath.resolve(object.fileName()).normalize();
+        if (!outputPath.startsWith(generatedOutputBasePath)) {
+            throw new IllegalArgumentException("fileName invalido: acceso fuera del directorio permitido.");
+        }
+
+        Files.createDirectories(outputPath.getParent());
+        Files.writeString(outputPath, object.content());
         return converter.convert(response);
     }
     public record CodeReview(
@@ -127,8 +160,10 @@ public class MyController {
     }
 
     private String leerCodigoFuente(String nombreClase) throws IOException {
-        // Ajusta esta ruta a la base de tu proyecto
-        Path path = Paths.get("src/main/java/com/example/demo/controller/", nombreClase + ".java");
+        Path path = sourceReadBasePath.resolve(nombreClase + ".java").normalize();
+        if (!path.startsWith(sourceReadBasePath)) {
+            throw new IOException("Nombre de clase invalido.");
+        }
         return Files.readString(path);
     }
 

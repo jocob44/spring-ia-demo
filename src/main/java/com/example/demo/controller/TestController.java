@@ -5,7 +5,15 @@ package com.example.demo.controller;
  */
 public class TestController {
 
-    private boolean isValid = true;
+    private final boolean isValid;
+
+    public TestController() {
+        this(true);
+    }
+
+    TestController(boolean isValid) {
+        this.isValid = isValid;
+    }
 
     /**
      * Método de prueba que devuelve un mensaje según el valor de isValid.

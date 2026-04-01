@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -100,8 +99,8 @@ public class SelfHealingController {
             String response = chatClient.prompt(prompt).call().content();
             return converter.convert(response);
 
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudo leer el archivo para la auditoría.");
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo leer el archivo para la auditoria.", e);
         }
     }
 
